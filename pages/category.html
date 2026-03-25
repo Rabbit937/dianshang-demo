@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>电商小程序 - 分类</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <style>
+    /* 分类页样式 */
+    .category-page {
+      display: flex;
+      height: calc(100% - 127px);
+      margin-top: 88px;
+    }
+    
+    /* 左侧分类导航 */
+    .category-sidebar {
+      width: 88px;
+      background: var(--bg-light);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    
+    .category-sidebar::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .sidebar-item {
+      padding: 16px 8px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .sidebar-item.active {
+      background: var(--bg-white);
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    
+    .sidebar-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: var(--primary-gradient);
+      border-radius: 0 2px 2px 0;
+    }
+    
+    .sidebar-item:active {
+      background: var(--bg-white);
+    }
+    
+    /* 右侧内容区域 */
+    .category-content {
+      flex: 1;
+      background: var(--bg-white);
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    .category-content::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* 分类头图 */
+    .category-banner {
+      width: 100%;
+      height: 100px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    .category-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .category-banner-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(229, 57, 53, 0.8), rgba(198, 40, 40, 0.9));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .category-banner-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .category-banner-desc {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    /* 子分类列表 */
+    .sub-category-section {
+      margin-bottom: 20px;
+    }
+    
+    .sub-category-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      padding-left: 8px;
+      border-left: 3px solid var(--primary-red);
+    }
+    
+    .sub-category-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .sub-category-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 8px;
+      border-radius: var(--radius-md);
+    }
+    
+    .sub-category-item:active {
+      transform: scale(0.95);
+    }
+    
+    .sub-category-item:hover {
+      background: var(--bg-light);
+    }
+    
+    .sub-category-img {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      background: var(--bg-light);
+      transition: all 0.3s ease;
+    }
+    
+    .sub-category-item:hover .sub-category-img {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .sub-category-name {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    /* 热门品牌 */
+    .hot-brands {
+      margin-top: 16px;
+    }
+    
+    .brands-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .brand-item {
+      background: var(--bg-light);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .brand-item:hover {
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .brand-logo {
+      height: 24px;
+      object-fit: contain;
+    }
+    
+    /* 热销榜单 */
+    .hot-ranking {
+      margin-top: 20px;
+    }
+    
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-light);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .ranking-item:hover {
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .ranking-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    
+    .ranking-num.top1 {
+      background: linear-gradient(135deg, #FFD700, #FFC107);
+      color: white;
+    }
+    
+    .ranking-num.top2 {
+      background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+      color: white;
+    }
+    
+    .ranking-num.top3 {
+      background: linear-gradient(135deg, #CD7F32, #B87333);
+      color: white;
+    }
+    
+    .ranking-num.normal {
+      background: var(--bg-gray);
+      color: var(--text-hint);
+    }
+    
+    .ranking-img {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    
+    .ranking-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .ranking-name {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    
+    .ranking-price {
+      font-size: 14px;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    
+    .ranking-sales {
+      font-size: 10px;
+      color: var(--text-hint);
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="phone-screen">
+      <!-- 状态栏 -->
+      <div class="status-bar">
+        <span>9:41</span>
+        <div class="flex-center gap-4">
+          <span>📶</span>
+          <span>🔋</span>
+        </div>
+      </div>
+      
+      <!-- 导航栏 -->
+      <div class="nav-bar">
+        <span class="nav-bar-title">商品分类</span>
+      </div>
+      
+      <!-- 分类页面主体 -->
+      <div class="category-page">
+        <!-- 左侧分类导航 -->
+        <div class="category-sidebar">
+          <div class="sidebar-item active">女装</div>
+          <div class="sidebar-item">男装</div>
+          <div class="sidebar-item">鞋靴</div>
+          <div class="sidebar-item">箱包</div>
+          <div class="sidebar-item">美妆</div>
+          <div class="sidebar-item">个护</div>
+          <div class="sidebar-item">运动</div>
+          <div class="sidebar-item">数码</div>
+          <div class="sidebar-item">家电</div>
+          <div class="sidebar-item">家居</div>
+          <div class="sidebar-item">食品</div>
+          <div class="sidebar-item">母婴</div>
+          <div class="sidebar-item">玩具</div>
+          <div class="sidebar-item">图书</div>
+        </div>
+        
+        <!-- 右侧内容区域 -->
+        <div class="category-content">
+          <!-- 分类头图 -->
+          <div class="category-banner animate-fade-in">
+            <img src="https://picsum.photos/seed/cat-banner/300/100" alt="女装专区">
+            <div class="category-banner-overlay">
+              <div class="category-banner-title">女装专区</div>
+              <div class="category-banner-desc">时尚穿搭 · 品质生活</div>
+            </div>
+          </div>
+          
+          <!-- 上装分类 -->
+          <div class="sub-category-section">
+            <div class="sub-category-title">上装</div>
+            <div class="sub-category-grid">
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/t1/80/80" alt="T恤" class="sub-category-img">
+                <span class="sub-category-name">T恤</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/t2/80/80" alt="衬衫" class="sub-category-img">
+                <span class="sub-category-name">衬衫</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/t3/80/80" alt="卫衣" class="sub-category-img">
+                <span class="sub-category-name">卫衣</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/t4/80/80" alt="针织衫" class="sub-category-img">
+                <span class="sub-category-name">针织衫</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/t5/80/80" alt="外套" class="sub-category-img">
+                <span class="sub-category-name">外套</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/t6/80/80" alt="西装" class="sub-category-img">
+                <span class="sub-category-name">西装</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 下装分类 -->
+          <div class="sub-category-section">
+            <div class="sub-category-title">下装</div>
+            <div class="sub-category-grid">
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/b1/80/80" alt="牛仔裤" class="sub-category-img">
+                <span class="sub-category-name">牛仔裤</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/b2/80/80" alt="休闲裤" class="sub-category-img">
+                <span class="sub-category-name">休闲裤</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/b3/80/80" alt="半身裙" class="sub-category-img">
+                <span class="sub-category-name">半身裙</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/b4/80/80" alt="连衣裙" class="sub-category-img">
+                <span class="sub-category-name">连衣裙</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/b5/80/80" alt="短裤" class="sub-category-img">
+                <span class="sub-category-name">短裤</span>
+              </div>
+              <div class="sub-category-item">
+                <img src="https://picsum.photos/seed/b6/80/80" alt="运动裤" class="sub-category-img">
+                <span class="sub-category-name">运动裤</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 热门品牌 -->
+          <div class="hot-brands">
+            <div class="sub-category-title">热门品牌</div>
+            <div class="brands-grid">
+              <div class="brand-item">
+                <span style="font-weight: 600; color: #333;">ZARA</span>
+              </div>
+              <div class="brand-item">
+                <span style="font-weight: 600; color: #E53935;">H&M</span>
+              </div>
+              <div class="brand-item">
+                <span style="font-weight: 600; color: #1A1A1A;">UNIQLO</span>
+              </div>
+              <div class="brand-item">
+                <span style="font-weight: 600; color: #FF6B6B;">MJstyle</span>
+              </div>
+              <div class="brand-item">
+                <span style="font-weight: 600; color: #666;">UR</span>
+              </div>
+              <div class="brand-item">
+                <span style="font-weight: 600; color: #C62828;">GAP</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 热销榜单 -->
+          <div class="hot-ranking">
+            <div class="sub-category-title">热销榜单</div>
+            <div class="ranking-list">
+              <div class="ranking-item">
+                <span class="ranking-num top1">1</span>
+                <img src="https://picsum.photos/seed/r1/80/80" alt="商品" class="ranking-img">
+                <div class="ranking-info">
+                  <div class="ranking-name">2024新款韩版宽松显瘦卫衣女</div>
+                  <div>
+                    <span class="ranking-price">¥128</span>
+                    <span class="ranking-sales">已售2.3万</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ranking-item">
+                <span class="ranking-num top2">2</span>
+                <img src="https://picsum.photos/seed/r2/80/80" alt="商品" class="ranking-img">
+                <div class="ranking-info">
+                  <div class="ranking-name">法式浪漫碎花连衣裙女夏季新款</div>
+                  <div>
+                    <span class="ranking-price">¥199</span>
+                    <span class="ranking-sales">已售1.8万</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ranking-item">
+                <span class="ranking-num top3">3</span>
+                <img src="https://picsum.photos/seed/r3/80/80" alt="商品" class="ranking-img">
+                <div class="ranking-info">
+                  <div class="ranking-name">高腰显瘦阔腿牛仔裤女直筒长裤</div>
+                  <div>
+                    <span class="ranking-price">¥89</span>
+                    <span class="ranking-sales">已售1.5万</span>
+                  </div>
+                </div>
+              </div>
+              <div class="ranking-item">
+                <span class="ranking-num normal">4</span>
+                <img src="https://picsum.photos/seed/r4/80/80" alt="商品" class="ranking-img">
+                <div class="ranking-info">
+                  <div class="ranking-name">气质通勤西装外套女春秋薄款</div>
+                  <div>
+                    <span class="ranking-price">¥259</span>
+                    <span class="ranking-sales">已售9876</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 底部安全区域 -->
+          <div class="safe-area-bottom"></div>
+        </div>
+      </div>
+      
+      <!-- 底部导航 -->
+      <div class="tab-bar">
+        <div class="tab-item">
+          <span class="tab-icon">🏠</span>
+          <span class="tab-label">首页</span>
+        </div>
+        <div class="tab-item active">
+          <span class="tab-icon">📂</span>
+          <span class="tab-label">分类</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">🛒</span>
+          <span class="tab-label">购物车</span>
+          <div class="badge">3</div>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">我的</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 分类导航切换
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+      item.addEventListener('click', function() {
+        sidebarItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

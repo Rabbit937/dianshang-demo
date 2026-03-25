@@ -1,0 +1,59 @@
+# 依赖
+node_modules/
+.pnp
+.pnp.js
+
+# 构建输出
+dist/
+dist-ssr/
+build/
+*.local
+
+# uni-app 编译输出
+unpackage/
+
+# IDE
+.hbuilderx/
+.idea/
+*.swp
+*.swo
+.vscode/
+
+# 环境变量（保留 .env.example 如果有）
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 缓存
+.cache/
+.temp/
+.tmp/
+.vs/
+
+# Drizzle ORM
+drizzle/
+
+# 微信小程序
+miniprogram_npm/
+
+# 测试覆盖率
+coverage/
+
+# 其他
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>电商小程序 - 首页</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <style>
+    /* 首页特定样式 */
+    .home-header {
+      background: var(--primary-gradient);
+      padding-bottom: 12px;
+      position: relative;
+    }
+    
+    .home-header::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      right: 0;
+      height: 20px;
+      background: var(--primary-gradient);
+      border-radius: 0 0 50% 50%;
+    }
+    
+    /* 轮播图 */
+    .banner-wrapper {
+      margin: 0 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      height: 160px;
+    }
+    
+    .banner-slider {
+      display: flex;
+      transition: transform 0.5s ease;
+      height: 100%;
+    }
+    
+    .banner-item {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .banner-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .banner-content {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      color: white;
+    }
+    
+    .banner-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .banner-desc {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .banner-dots {
+      position: absolute;
+      bottom: 8px;
+      right: 16px;
+      display: flex;
+      gap: 6px;
+    }
+    
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .dot.active {
+      width: 20px;
+      border-radius: 3px;
+      background: white;
+    }
+    
+    /* 分类导航 */
+    .category-nav {
+      background: var(--bg-white);
+      margin: 24px 16px 16px;
+      border-radius: var(--radius-lg);
+      padding: 20px 12px 12px;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px 8px;
+    }
+    
+    .category-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .category-item:active {
+      transform: scale(0.95);
+    }
+    
+    .category-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      background: linear-gradient(135deg, #FFE5E5 0%, #FFCDD2 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .category-item:nth-child(2) .category-icon {
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+    }
+    
+    .category-item:nth-child(3) .category-icon {
+      background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+    }
+    
+    .category-item:nth-child(4) .category-icon {
+      background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    }
+    
+    .category-item:nth-child(5) .category-icon {
+      background: linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%);
+    }
+    
+    .category-item:nth-child(6) .category-icon {
+      background: linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%);
+    }
+    
+    .category-item:nth-child(7) .category-icon {
+      background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    }
+    
+    .category-item:nth-child(8) .category-icon {
+      background: linear-gradient(135deg, #FBE9E7 0%, #FFCCBC 100%);
+    }
+    
+    .category-item:nth-child(9) .category-icon {
+      background: linear-gradient(135deg, #EDE7F6 0%, #D1C4E9 100%);
+    }
+    
+    .category-item:nth-child(10) .category-icon {
+      background: linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%);
+    }
+    
+    .category-item:hover .category-icon {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .category-name {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    /* 限时秒杀 */
+    .flash-sale {
+      margin: 16px;
+      background: linear-gradient(135deg, #FFE5E5 0%, #FFF5F5 100%);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .flash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .flash-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .flash-title h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-red);
+    }
+    
+    .flash-icon {
+      font-size: 20px;
+      animation: pulse 1s infinite;
+    }
+    
+    .countdown {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .countdown-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-right: 4px;
+    }
+    
+    .countdown-num {
+      background: var(--primary-red);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 24px;
+      text-align: center;
+    }
+    
+    .countdown-sep {
+      color: var(--primary-red);
+      font-weight: bold;
+    }
+    
+    .flash-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    
+    .flash-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .flash-item {
+      min-width: 100px;
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .flash-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .flash-img {
+      width: 76px;
+      height: 76px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+    }
+    
+    .flash-price {
+      color: var(--primary-red);
+      font-size: 16px;
+      font-weight: 700;
+    }
+    
+    .flash-price-original {
+      font-size: 11px;
+      color: var(--text-hint);
+      text-decoration: line-through;
+      margin-top: 2px;
+    }
+    
+    .flash-progress {
+      height: 16px;
+      background: #FFEBEE;
+      border-radius: 8px;
+      margin-top: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .flash-progress-bar {
+      height: 100%;
+      background: var(--primary-gradient);
+      border-radius: 8px;
+      transition: width 0.3s ease;
+    }
+    
+    .flash-progress-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    
+    /* 推荐商品 */
+    .recommend-section {
+      margin: 16px;
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--primary-gradient);
+      border-radius: 2px;
+    }
+    
+    .section-more {
+      font-size: 12px;
+      color: var(--text-hint);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .product-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .product-img-wrapper {
+      position: relative;
+      padding-top: 100%;
+      overflow: hidden;
+    }
+    
+    .product-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .product-card:hover .product-img {
+      transform: scale(1.05);
+    }
+    
+    .product-tag {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+    }
+    
+    .product-info {
+      padding: 12px;
+    }
+    
+    .product-name {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      height: 36px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .product-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    
+    .product-price {
+      display: flex;
+      align-items: baseline;
+    }
+    
+    .price-symbol {
+      font-size: 12px;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    
+    .price-value {
+      font-size: 18px;
+      color: var(--primary-red);
+      font-weight: 700;
+    }
+    
+    .price-original {
+      font-size: 11px;
+      color: var(--text-hint);
+      text-decoration: line-through;
+      margin-left: 4px;
+    }
+    
+    .product-sales {
+      font-size: 10px;
+      color: var(--text-hint);
+    }
+    
+    /* 公告条 */
+    .notice-bar {
+      margin: 0 16px 16px;
+      background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+      border-radius: var(--radius-full);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+    
+    .notice-icon {
+      color: var(--orange);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    
+    .notice-content {
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .notice-text {
+      white-space: nowrap;
+      animation: notice-scroll 15s linear infinite;
+      font-size: 12px;
+      color: #F57C00;
+    }
+    
+    @keyframes notice-scroll {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    
+    /* 空状态 */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+    }
+    
+    .empty-icon {
+      font-size: 48px;
+      color: var(--text-hint);
+      margin-bottom: 12px;
+    }
+    
+    .empty-text {
+      font-size: 14px;
+      color: var(--text-hint);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="phone-screen">
+      <!-- 头部 -->
+      <div class="home-header">
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="flex-center gap-4">
+            <span>📶</span>
+            <span>🔋</span>
+          </div>
+        </div>
+        
+        <!-- 搜索栏 -->
+        <div class="search-bar" style="margin-top: 8px;">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="搜索商品、品牌、店铺">
+          <span style="color: var(--primary-red); font-size: 20px;">📷</span>
+        </div>
+      </div>
+      
+      <!-- 内容区域 -->
+      <div style="margin-top: 10px;">
+        <!-- 轮播图 -->
+        <div class="banner-wrapper animate-fade-in">
+          <div class="banner-slider" id="bannerSlider">
+            <div class="banner-item">
+              <img src="https://picsum.photos/seed/banner1/400/200" alt="Banner 1">
+              <div class="banner-content">
+                <div class="banner-title">🔥 年终大促 限时5折起</div>
+                <div class="banner-desc">全场商品低至5折，限时抢购中</div>
+              </div>
+            </div>
+            <div class="banner-item">
+              <img src="https://picsum.photos/seed/banner2/400/200" alt="Banner 2">
+              <div class="banner-content">
+                <div class="banner-title">✨ 新品首发 专享优惠</div>
+                <div class="banner-desc">新品上架，首单立减50元</div>
+              </div>
+            </div>
+            <div class="banner-item">
+              <img src="https://picsum.photos/seed/banner3/400/200" alt="Banner 3">
+              <div class="banner-content">
+                <div class="banner-title">🎁 会员专享 双倍积分</div>
+                <div class="banner-desc">会员购物享双倍积分，好礼兑换不停</div>
+              </div>
+            </div>
+          </div>
+          <div class="banner-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+        
+        <!-- 分类导航 -->
+        <div class="category-nav animate-slide-up">
+          <div class="category-grid">
+            <div class="category-item">
+              <div class="category-icon">👗</div>
+              <span class="category-name">女装</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">👔</div>
+              <span class="category-name">男装</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">👟</div>
+              <span class="category-name">运动</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">📱</div>
+              <span class="category-name">数码</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">🏠</div>
+              <span class="category-name">家居</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">💄</div>
+              <span class="category-name">美妆</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">🍎</div>
+              <span class="category-name">食品</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">👶</div>
+              <span class="category-name">母婴</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">⌚</div>
+              <span class="category-name">配饰</span>
+            </div>
+            <div class="category-item">
+              <div class="category-icon">📋</div>
+              <span class="category-name">全部</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 公告条 -->
+        <div class="notice-bar">
+          <span class="notice-icon">📢</span>
+          <div class="notice-content">
+            <div class="notice-text">限时活动：全场满199减30，满399减80，满699减150，上不封顶！</div>
+          </div>
+        </div>
+        
+        <!-- 限时秒杀 -->
+        <div class="flash-sale">
+          <div class="flash-header">
+            <div class="flash-title">
+              <span class="flash-icon">⚡</span>
+              <h3>限时秒杀</h3>
+            </div>
+            <div class="countdown">
+              <span class="countdown-text">距结束</span>
+              <span class="countdown-num" id="hours">02</span>
+              <span class="countdown-sep">:</span>
+              <span class="countdown-num" id="minutes">35</span>
+              <span class="countdown-sep">:</span>
+              <span class="countdown-num" id="seconds">48</span>
+            </div>
+          </div>
+          <div class="flash-scroll">
+            <div class="flash-item">
+              <img src="https://picsum.photos/seed/flash1/100/100" alt="商品" class="flash-img">
+              <div class="flash-price">¥99</div>
+              <div class="flash-price-original">¥299</div>
+              <div class="flash-progress">
+                <div class="flash-progress-bar" style="width: 75%"></div>
+                <span class="flash-progress-text">已抢75%</span>
+              </div>
+            </div>
+            <div class="flash-item">
+              <img src="https://picsum.photos/seed/flash2/100/100" alt="商品" class="flash-img">
+              <div class="flash-price">¥199</div>
+              <div class="flash-price-original">¥599</div>
+              <div class="flash-progress">
+                <div class="flash-progress-bar" style="width: 60%"></div>
+                <span class="flash-progress-text">已抢60%</span>
+              </div>
+            </div>
+            <div class="flash-item">
+              <img src="https://picsum.photos/seed/flash3/100/100" alt="商品" class="flash-img">
+              <div class="flash-price">¥49</div>
+              <div class="flash-price-original">¥159</div>
+              <div class="flash-progress">
+                <div class="flash-progress-bar" style="width: 90%"></div>
+                <span class="flash-progress-text">已抢90%</span>
+              </div>
+            </div>
+            <div class="flash-item">
+              <img src="https://picsum.photos/seed/flash4/100/100" alt="商品" class="flash-img">
+              <div class="flash-price">¥299</div>
+              <div class="flash-price-original">¥899</div>
+              <div class="flash-progress">
+                <div class="flash-progress-bar" style="width: 45%"></div>
+                <span class="flash-progress-text">已抢45%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 推荐商品 -->
+        <div class="recommend-section">
+          <div class="section-header">
+            <div class="section-title">猜你喜欢</div>
+            <div class="section-more">查看更多 ›</div>
+          </div>
+          <div class="product-grid">
+            <div class="product-card">
+              <div class="product-img-wrapper">
+                <img src="https://picsum.photos/seed/prod1/200/200" alt="商品" class="product-img">
+                <div class="product-tag">
+                  <span class="tag tag-hot">爆款</span>
+                </div>
+              </div>
+              <div class="product-info">
+                <div class="product-name">2024新款秋季时尚卫衣女宽松韩版百搭连帽外套</div>
+                <div class="product-bottom">
+                  <div class="product-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">128</span>
+                    <span class="price-original">¥299</span>
+                  </div>
+                  <span class="product-sales">已售2.3万</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-img-wrapper">
+                <img src="https://picsum.photos/seed/prod2/200/200" alt="商品" class="product-img">
+                <div class="product-tag">
+                  <span class="tag tag-new">新品</span>
+                </div>
+              </div>
+              <div class="product-info">
+                <div class="product-name">Apple AirPods Pro 2 无线蓝牙降噪耳机</div>
+                <div class="product-bottom">
+                  <div class="product-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">1499</span>
+                    <span class="price-original">¥1999</span>
+                  </div>
+                  <span class="product-sales">已售8562</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-img-wrapper">
+                <img src="https://picsum.photos/seed/prod3/200/200" alt="商品" class="product-img">
+                <div class="product-tag">
+                  <span class="tag tag-sale">特价</span>
+                </div>
+              </div>
+              <div class="product-info">
+                <div class="product-name">智能手表运动款 多功能健康监测 防水长续航</div>
+                <div class="product-bottom">
+                  <div class="product-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">299</span>
+                    <span class="price-original">¥599</span>
+                  </div>
+                  <span class="product-sales">已售1.5万</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-img-wrapper">
+                <img src="https://picsum.photos/seed/prod4/200/200" alt="商品" class="product-img">
+                <div class="product-tag">
+                  <span class="tag tag-vip">VIP</span>
+                </div>
+              </div>
+              <div class="product-info">
+                <div class="product-name">大牌口红礼盒套装 丝绒雾面持久不脱色</div>
+                <div class="product-bottom">
+                  <div class="product-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">199</span>
+                    <span class="price-original">¥399</span>
+                  </div>
+                  <span class="product-sales">已售9876</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-img-wrapper">
+                <img src="https://picsum.photos/seed/prod5/200/200" alt="商品" class="product-img">
+              </div>
+              <div class="product-info">
+                <div class="product-name">北欧简约落地灯 客厅卧室装饰台灯</div>
+                <div class="product-bottom">
+                  <div class="product-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">359</span>
+                  </div>
+                  <span class="product-sales">已售3245</span>
+                </div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-img-wrapper">
+                <img src="https://picsum.photos/seed/prod6/200/200" alt="商品" class="product-img">
+                <div class="product-tag">
+                  <span class="tag tag-hot">爆款</span>
+                </div>
+              </div>
+              <div class="product-info">
+                <div class="product-name">休闲运动鞋男 透气网面跑步鞋 轻便舒适</div>
+                <div class="product-bottom">
+                  <div class="product-price">
+                    <span class="price-symbol">¥</span>
+                    <span class="price-value">168</span>
+                    <span class="price-original">¥368</span>
+                  </div>
+                  <span class="product-sales">已售6789</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 底部占位 -->
+        <div class="content-bottom"></div>
+      </div>
+      
+      <!-- 底部导航 -->
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <span class="tab-icon">🏠</span>
+          <span class="tab-label">首页</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">📂</span>
+          <span class="tab-label">分类</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">🛒</span>
+          <span class="tab-label">购物车</span>
+          <div class="badge">3</div>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">我的</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 轮播图自动切换
+    let currentBanner = 0;
+    const bannerSlider = document.getElementById('bannerSlider');
+    const dots = document.querySelectorAll('.dot');
+    
+    function updateBanner() {
+      bannerSlider.style.transform = `translateX(-${currentBanner * 100}%)`;
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentBanner);
+      });
+    }
+    
+    setInterval(() => {
+      currentBanner = (currentBanner + 1) % 3;
+      updateBanner();
+    }, 4000);
+    
+    // 倒计时
+    function updateCountdown() {
+      const hours = document.getElementById('hours');
+      const minutes = document.getElementById('minutes');
+      const seconds = document.getElementById('seconds');
+      
+      let h = parseInt(hours.textContent);
+      let m = parseInt(minutes.textContent);
+      let s = parseInt(seconds.textContent);
+      
+      s--;
+      if (s < 0) {
+        s = 59;
+        m--;
+        if (m < 0) {
+          m = 59;
+          h--;
+          if (h < 0) {
+            h = 23;
+          }
+        }
+      }
+      
+      hours.textContent = h.toString().padStart(2, '0');
+      minutes.textContent = m.toString().padStart(2, '0');
+      seconds.textContent = s.toString().padStart(2, '0');
+    }
+    
+    setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>

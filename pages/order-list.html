@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的订单</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <style>
+    /* 页面特定样式 */
+    .page-container {
+      width: 375px;
+      min-height: 812px;
+      background: var(--bg-gray);
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* 页面头部 */
+    .page-header {
+      background: var(--primary-gradient);
+      padding: 12px 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-title {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      padding: 8px 0 12px;
+    }
+
+    /* 标签页导航 */
+    .tabs-nav {
+      display: flex;
+      background: var(--primary-red);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 8px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 500;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: transparent;
+      border: none;
+    }
+
+    .tab-btn.active {
+      color: white;
+      font-weight: 600;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 3px;
+      background: white;
+      border-radius: 2px 2px 0 0;
+    }
+
+    .tab-count {
+      display: inline-block;
+      min-width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 9px;
+      font-size: 11px;
+      margin-left: 4px;
+      padding: 0 5px;
+    }
+
+    .tab-btn.active .tab-count {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* 订单内容区 */
+    .order-content {
+      padding: 12px 12px 100px;
+      min-height: calc(100% - 120px);
+    }
+
+    /* 订单卡片 */
+    .order-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* 店铺信息行 */
+    .order-shop {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    .shop-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shop-icon {
+      width: 20px;
+      height: 20px;
+      background: var(--primary-gradient);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+    }
+
+    .shop-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .shop-arrow {
+      color: var(--text-hint);
+      font-size: 14px;
+    }
+
+    .order-status {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status-pending-pay {
+      color: var(--orange);
+    }
+
+    .status-pending-ship {
+      color: var(--primary-red);
+    }
+
+    .status-pending-receive {
+      color: var(--info);
+    }
+
+    .status-completed {
+      color: var(--success);
+    }
+
+    /* 商品列表 */
+    .order-products {
+      padding: 12px 14px;
+    }
+
+    .product-item {
+      display: flex;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .product-item:not(:last-child) {
+      border-bottom: 1px solid var(--divider);
+      margin-bottom: 8px;
+    }
+
+    .product-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .product-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--bg-gray);
+      flex-shrink: 0;
+    }
+
+    .product-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .product-title {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .product-spec {
+      font-size: 12px;
+      color: var(--text-hint);
+      margin-top: 4px;
+    }
+
+    .product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .product-price {
+      color: var(--primary-red);
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .product-price-symbol {
+      font-size: 11px;
+    }
+
+    .product-qty {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* 订单汇总行 */
+    .order-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-top: 1px solid var(--divider);
+      background: var(--bg-gray);
+    }
+
+    .order-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .order-total {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .order-total-price {
+      color: var(--primary-red);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .order-total-price-symbol {
+      font-size: 12px;
+    }
+
+    /* 订单操作按钮 */
+    .order-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--divider);
+    }
+
+    .btn-action {
+      min-width: 70px;
+      height: 32px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      padding: 0 14px;
+    }
+
+    .btn-action:active {
+      transform: scale(0.96);
+    }
+
+    .btn-remind-ship {
+      background: var(--primary-red);
+      color: white;
+    }
+
+    .btn-remind-ship:disabled {
+      background: var(--text-hint);
+      cursor: not-allowed;
+    }
+
+    .btn-view-logistics {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--divider);
+    }
+
+    .btn-confirm-receive {
+      background: var(--primary-red);
+      color: white;
+    }
+
+    .btn-rate {
+      background: transparent;
+      color: var(--primary-red);
+      border: 1px solid var(--primary-red);
+    }
+
+    .btn-delete {
+      background: transparent;
+      color: var(--text-hint);
+      border: 1px solid var(--divider);
+    }
+
+    .btn-pay-now {
+      background: var(--primary-gradient);
+      color: white;
+      min-width: 88px;
+      height: 36px;
+      font-size: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* 空状态 */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 100px;
+      height: 100px;
+      background: var(--bg-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: var(--text-hint);
+      margin-bottom: 20px;
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .empty-btn {
+      background: var(--primary-gradient);
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 隐藏非当前tab的内容 */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* 底部导航 */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 83px;
+      background: var(--bg-white);
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding-top: 8px;
+      border-top: 1px solid var(--divider);
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: var(--text-hint);
+      transition: all 0.2s ease;
+    }
+
+    .nav-item.active {
+      color: var(--primary-red);
+    }
+
+    .nav-icon {
+      font-size: 24px;
+    }
+
+    .nav-label {
+      font-size: 10px;
+    }
+
+    .nav-item.active .nav-label {
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <div class="header-title">我的订单</div>
+      <!-- 标签页导航 -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="all">
+          全部
+          <span class="tab-count">8</span>
+        </button>
+        <button class="tab-btn" data-tab="pending-pay">
+          待付款
+          <span class="tab-count">2</span>
+        </button>
+        <button class="tab-btn" data-tab="pending-ship">
+          待发货
+          <span class="tab-count">1</span>
+        </button>
+        <button class="tab-btn" data-tab="pending-receive">
+          待收货
+          <span class="tab-count">3</span>
+        </button>
+        <button class="tab-btn" data-tab="completed">
+          已完成
+          <span class="tab-count">2</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 订单内容区 -->
+    <div class="order-content">
+
+      <!-- 待付款订单 -->
+      <div class="tab-content active" data-tab="pending-pay">
+        <!-- 订单卡片1 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">店</div>
+              <span class="shop-name">小米官方旗舰店</span>
+            </div>
+            <span class="order-status status-pending-pay">待付款</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=1" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">小米14 Ultra 影像套装 黑色皮革保护壳</div>
+                <div class="product-spec">颜色: 黑色; 规格: 标准版</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>299</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>299.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-pay-now">立即支付</button>
+          </div>
+        </div>
+
+        <!-- 订单卡片2 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">东</div>
+              <span class="shop-name">京东自营官方店</span>
+            </div>
+            <span class="order-status status-pending-pay">待付款</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=2" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">Apple iPhone 15 Pro Max 原装MagSafe磁吸保护壳 透明色</div>
+                <div class="product-spec">型号: iPhone 15 Pro Max; 颜色: 透明</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>399</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>399.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-pay-now">立即支付</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 待发货订单 -->
+      <div class="tab-content" data-tab="pending-ship">
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">优</div>
+              <span class="shop-name">优衣库官方旗舰店</span>
+            </div>
+            <span class="order-status status-pending-ship">待发货</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=3" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">UNIQLO U系列 高品质法兰绒衬衫外套</div>
+                <div class="product-spec">尺码: L; 颜色: 浅蓝色格纹</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>199</span>
+                  <span class="product-qty">x2</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共2件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>398.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-remind-ship">提醒发货</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 待收货订单 -->
+      <div class="tab-content" data-tab="pending-receive">
+        <!-- 订单卡片1 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">天</div>
+              <span class="shop-name">天猫国际官方店</span>
+            </div>
+            <span class="order-status status-pending-receive">待收货</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=4" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">戴森Dyson Airwrap多功能卷发棒 限定配色 紫红色</div>
+                <div class="product-spec">型号: HS05; 颜色: 限定紫红</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>3299</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>3299.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-view-logistics">查看物流</button>
+            <button class="btn-action btn-confirm-receive">确认收货</button>
+          </div>
+        </div>
+
+        <!-- 订单卡片2 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">网</div>
+              <span class="shop-name">网易严选官方店</span>
+            </div>
+            <span class="order-status status-pending-receive">待收货</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=5" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">网易严选 升降办公桌 电动智能桌 1.4m*0.7m</div>
+                <div class="product-spec">尺寸: 1.4m*0.7m; 颜色: 原木色</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>1299</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>1299.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-view-logistics">查看物流</button>
+            <button class="btn-action btn-confirm-receive">确认收货</button>
+          </div>
+        </div>
+
+        <!-- 订单卡片3 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">当</div>
+              <span class="shop-name">当当网官方旗舰店</span>
+            </div>
+            <span class="order-status status-pending-receive">待收货</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=6" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">人类简史三部曲套装尤瓦尔·赫拉利作品集</div>
+                <div class="product-spec">套装: 全三册; 版本: 精装版</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>168</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>168.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-view-logistics">查看物流</button>
+            <button class="btn-action btn-confirm-receive">确认收货</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已完成订单 -->
+      <div class="tab-content" data-tab="completed">
+        <!-- 订单卡片1 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">苏</div>
+              <span class="shop-name">苏宁易购官方旗舰店</span>
+            </div>
+            <span class="order-status status-completed">已完成</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=7" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">飞利浦电动牙刷HX9997 智能磁悬浮声波牙刷</div>
+                <div class="product-spec">型号: HX9997/12; 颜色: 渐变紫</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>899</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>899.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-rate">立即评价</button>
+            <button class="btn-action btn-delete">删除订单</button>
+          </div>
+        </div>
+
+        <!-- 订单卡片2 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">拼</div>
+              <span class="shop-name">拼多多官方旗舰店</span>
+            </div>
+            <span class="order-status status-completed">已完成</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=8" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">农夫山泉NFC橙汁100%NFC非浓缩还原 1L*12瓶整箱装</div>
+                <div class="product-spec">规格: 1L*12瓶; 保质期: 45天</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>89.9</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>89.90</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-rate">立即评价</button>
+            <button class="btn-action btn-delete">删除订单</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 全部订单 -->
+      <div class="tab-content" data-tab="all">
+        <!-- 全部订单包含所有订单的汇总展示 -->
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">店</div>
+              <span class="shop-name">小米官方旗舰店</span>
+            </div>
+            <span class="order-status status-pending-pay">待付款</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=1" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">小米14 Ultra 影像套装 黑色皮革保护壳</div>
+                <div class="product-spec">颜色: 黑色; 规格: 标准版</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>299</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>299.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-pay-now">立即支付</button>
+          </div>
+        </div>
+
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">优</div>
+              <span class="shop-name">优衣库官方旗舰店</span>
+            </div>
+            <span class="order-status status-pending-ship">待发货</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=3" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">UNIQLO U系列 高品质法兰绒衬衫外套</div>
+                <div class="product-spec">尺码: L; 颜色: 浅蓝色格纹</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>199</span>
+                  <span class="product-qty">x2</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共2件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>398.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-remind-ship">提醒发货</button>
+          </div>
+        </div>
+
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">天</div>
+              <span class="shop-name">天猫国际官方店</span>
+            </div>
+            <span class="order-status status-pending-receive">待收货</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=4" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">戴森Dyson Airwrap多功能卷发棒 限定配色 紫红色</div>
+                <div class="product-spec">型号: HS05; 颜色: 限定紫红</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>3299</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>3299.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-view-logistics">查看物流</button>
+            <button class="btn-action btn-confirm-receive">确认收货</button>
+          </div>
+        </div>
+
+        <div class="order-card">
+          <div class="order-shop">
+            <div class="shop-info">
+              <div class="shop-icon">苏</div>
+              <span class="shop-name">苏宁易购官方旗舰店</span>
+            </div>
+            <span class="order-status status-completed">已完成</span>
+          </div>
+          <div class="order-products">
+            <div class="product-item">
+              <img src="https://picsum.photos/160/160?random=7" alt="商品图片" class="product-thumb">
+              <div class="product-info">
+                <div class="product-title">飞利浦电动牙刷HX9997 智能磁悬浮声波牙刷</div>
+                <div class="product-spec">型号: HX9997/12; 颜色: 渐变紫</div>
+                <div class="product-bottom">
+                  <span class="product-price"><span class="product-price-symbol">¥</span>899</span>
+                  <span class="product-qty">x1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-summary">
+            <div class="order-info">共1件商品</div>
+            <div class="order-total">
+              合计: <span class="order-total-price"><span class="order-total-price-symbol">¥</span>899.00</span>
+            </div>
+          </div>
+          <div class="order-actions">
+            <button class="btn-action btn-rate">立即评价</button>
+            <button class="btn-action btn-delete">删除订单</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+      <div class="nav-item">
+        <span class="nav-icon">首页</span>
+        <span class="nav-label">首页</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">分类</span>
+        <span class="nav-label">分类</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">购物车</span>
+        <span class="nav-label">购物车</span>
+      </div>
+      <div class="nav-item active">
+        <span class="nav-icon">订单</span>
+        <span class="nav-label">订单</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">我的</span>
+        <span class="nav-label">我的</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 标签页切换功能
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // 移除所有active
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        // 添加active到当前
+        this.classList.add('active');
+        const tabName = this.dataset.tab;
+        document.querySelector(`.tab-content[data-tab="${tabName}"]`).classList.add('active');
+      });
+    });
+
+    // 底部导航切换
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

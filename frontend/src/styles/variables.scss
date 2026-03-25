@@ -1,0 +1,45 @@
+// 主题色 - 红色系
+$primary-color: #E53935;
+$primary-light: #FF6B6B;
+$primary-pale: #FFE8E8;
+$primary-dark: #C62828;
+
+// 文字颜色
+$text-primary: #1A1A1A;
+$text-regular: #444444;
+$text-secondary: #666666;
+$text-hint: #999999;
+$text-disabled: #CCCCCC;
+
+// 背景色
+$bg-page: #F7F7F7;
+$bg-white: #FFFFFF;
+$bg-light: #FAFAFA;
+$bg-gray: #F0F0F0;
+$bg-skeleton: #EBEBEB;
+
+// 边框色
+$border-color: #EEEEEE;
+$border-light: #F5F5F5;
+
+// 阴影
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+$shadow-card: 0 2rpx 12rpx rgba(0, 0, 0, 0.03);
+$shadow-color: rgba(0, 0, 0, 0.06);
+
+// 圆角
+$radius-xs: 4rpx;
+$radius-sm: 8rpx;
+$radius-md: 12rpx;
+$radius-lg: 16rpx;
+$radius-xl: 24rpx;
+$radius-2xl: 32rpx;
+$radius-full: 9999rpx;
+
+// 安全区域变量
+$safe-area-inset-top: env(safe-area-inset-top);
+$safe-area-inset-bottom: env(safe-area-inset-bottom);
+$safe-area-inset-left: env(safe-area-inset-left);
+$safe-area-inset-right: env(safe-area-inset-right);

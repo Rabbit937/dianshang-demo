@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>电商小程序 - 商品详情</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <style>
+    /* 商品详情页样式 */
+    .detail-container {
+      padding-bottom: 70px;
+    }
+    
+    /* 商品图片轮播 */
+    .product-gallery {
+      position: relative;
+      height: 375px;
+      background: var(--bg-light);
+    }
+    
+    .gallery-slider {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .gallery-slider::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .gallery-item {
+      min-width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
+    }
+    
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .gallery-indicator {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+    }
+    
+    /* 返回按钮 */
+    .back-btn {
+      position: absolute;
+      top: 50px;
+      left: 16px;
+      width: 36px;
+      height: 36px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    
+    .share-btn {
+      position: absolute;
+      top: 50px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    
+    /* 商品信息 */
+    .product-info-section {
+      background: var(--bg-white);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .price-section {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .current-price {
+      display: flex;
+      align-items: baseline;
+    }
+    
+    .current-price .symbol {
+      font-size: 16px;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    
+    .current-price .value {
+      font-size: 28px;
+      color: var(--primary-red);
+      font-weight: 700;
+    }
+    
+    .original-price {
+      font-size: 14px;
+      color: var(--text-hint);
+      text-decoration: line-through;
+    }
+    
+    .discount-tag {
+      background: linear-gradient(135deg, #FF6B6B, #E53935);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .product-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    
+    .product-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .product-tag-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--primary-red);
+      background: #FFEBEE;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    
+    .product-tag-item .icon {
+      font-size: 14px;
+    }
+    
+    /* 销量评分 */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--divider);
+      margin-top: 12px;
+    }
+    
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .stat-item .value {
+      color: var(--primary-red);
+      font-weight: 500;
+    }
+    
+    /* 优惠信息 */
+    .promo-section {
+      background: linear-gradient(135deg, #FFF5F5 0%, #FFEBEE 100%);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+    
+    .promo-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .promo-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-red);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .promo-more {
+      font-size: 12px;
+      color: var(--text-hint);
+      cursor: pointer;
+    }
+    
+    .promo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .promo-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .promo-tag {
+      background: var(--primary-red);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    
+    .promo-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    /* 规格选择 */
+    .spec-section {
+      background: var(--bg-white);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .spec-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--divider);
+      cursor: pointer;
+    }
+    
+    .spec-row:last-child {
+      border-bottom: none;
+    }
+    
+    .spec-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .spec-value {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    .spec-arrow {
+      color: var(--text-hint);
+      font-size: 12px;
+    }
+    
+    .selected-specs {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .selected-spec {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg-light);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    
+    /* 店铺信息 */
+    .shop-section {
+      background: var(--bg-white);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .shop-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .shop-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      border: 1px solid var(--divider);
+    }
+    
+    .shop-detail {
+      flex: 1;
+    }
+    
+    .shop-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .shop-stats {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .shop-stat {
+      font-size: 11px;
+      color: var(--text-hint);
+    }
+    
+    .shop-stat span {
+      color: var(--primary-red);
+      font-weight: 500;
+    }
+    
+    .shop-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--primary-red);
+      border-radius: var(--radius-full);
+      background: transparent;
+      color: var(--primary-red);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .shop-btn:hover {
+      background: var(--primary-red);
+      color: white;
+    }
+    
+    /* 评价区域 */
+    .review-section {
+      background: var(--bg-white);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .review-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .review-count {
+      font-size: 12px;
+      color: var(--text-hint);
+    }
+    
+    .review-tags {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 12px;
+    }
+    
+    .review-tags::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .review-tag {
+      padding: 6px 12px;
+      background: var(--bg-light);
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .review-tag.active,
+    .review-tag:hover {
+      background: #FFEBEE;
+      color: var(--primary-red);
+    }
+    
+    .review-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--divider);
+    }
+    
+    .review-item:last-child {
+      border-bottom: none;
+    }
+    
+    .review-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .review-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    
+    .review-username {
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex: 1;
+    }
+    
+    .review-rating {
+      color: var(--gold);
+      font-size: 12px;
+    }
+    
+    .review-content {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    
+    .review-images {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .review-img {
+      width: 72px;
+      height: 72px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      cursor: pointer;
+    }
+    
+    .review-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-hint);
+    }
+    
+    /* 商品详情 */
+    .detail-section {
+      background: var(--bg-white);
+      padding: 16px;
+    }
+    
+    .detail-header {
+      text-align: center;
+      padding: 16px 0;
+      color: var(--text-hint);
+      font-size: 14px;
+      position: relative;
+    }
+    
+    .detail-header::before,
+    .detail-header::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 60px;
+      height: 1px;
+      background: var(--divider);
+    }
+    
+    .detail-header::before {
+      left: 40px;
+    }
+    
+    .detail-header::after {
+      right: 40px;
+    }
+    
+    .detail-images {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    
+    .detail-img {
+      width: 100%;
+    }
+    
+    /* 底部操作栏 */
+    .bottom-action-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background: var(--bg-white);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    
+    .action-icons {
+      display: flex;
+      gap: 24px;
+      margin-right: 16px;
+    }
+    
+    .action-icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+    }
+    
+    .action-icon-item .icon {
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+    
+    .action-icon-item .label {
+      font-size: 10px;
+      color: var(--text-hint);
+    }
+    
+    .action-icon-item.active .icon {
+      color: var(--primary-red);
+    }
+    
+    .action-buttons {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-add-cart {
+      flex: 1;
+      height: 44px;
+      background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
+      border: none;
+      border-radius: 22px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-buy-now {
+      flex: 1;
+      height: 44px;
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 22px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-add-cart:hover,
+    .btn-buy-now:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* 规格弹窗 */
+    .spec-modal {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-white);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      padding: 20px;
+      z-index: 200;
+      display: none;
+      animation: slideUp 0.3s ease;
+    }
+    
+    .spec-modal.show {
+      display: block;
+    }
+    
+    .modal-header {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .modal-product-img {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+    }
+    
+    .modal-product-info {
+      flex: 1;
+    }
+    
+    .modal-price {
+      color: var(--primary-red);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .modal-stock {
+      font-size: 12px;
+      color: var(--text-hint);
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 20px;
+      color: var(--text-hint);
+      cursor: pointer;
+    }
+    
+    .spec-group {
+      margin-bottom: 16px;
+    }
+    
+    .spec-group-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    
+    .spec-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .spec-option {
+      padding: 8px 16px;
+      background: var(--bg-light);
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .spec-option:hover,
+    .spec-option.active {
+      background: #FFEBEE;
+      border-color: var(--primary-red);
+      color: var(--primary-red);
+    }
+    
+    .quantity-section {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-top: 1px solid var(--divider);
+    }
+    
+    .quantity-label {
+      font-size: 14px;
+    }
+    
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .quantity-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bg-light);
+      border: none;
+      font-size: 16px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .quantity-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .quantity-value {
+      width: 40px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .modal-confirm-btn {
+      width: 100%;
+      height: 48px;
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: var(--radius-full);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 150;
+      display: none;
+    }
+    
+    .modal-overlay.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="phone-screen">
+      <div class="detail-container">
+        <!-- 返回按钮 -->
+        <div class="back-btn">‹</div>
+        <div class="share-btn">↗</div>
+        
+        <!-- 商品图片轮播 -->
+        <div class="product-gallery">
+          <div class="gallery-slider">
+            <div class="gallery-item">
+              <img src="https://picsum.photos/seed/detail1/400/400" alt="商品图片">
+            </div>
+            <div class="gallery-item">
+              <img src="https://picsum.photos/seed/detail2/400/400" alt="商品图片">
+            </div>
+            <div class="gallery-item">
+              <img src="https://picsum.photos/seed/detail3/400/400" alt="商品图片">
+            </div>
+            <div class="gallery-item">
+              <img src="https://picsum.photos/seed/detail4/400/400" alt="商品图片">
+            </div>
+          </div>
+          <div class="gallery-indicator">1/4</div>
+        </div>
+        
+        <!-- 商品信息 -->
+        <div class="product-info-section">
+          <div class="price-section">
+            <div class="current-price">
+              <span class="symbol">¥</span>
+              <span class="value">128</span>
+            </div>
+            <span class="original-price">¥299</span>
+            <span class="discount-tag">4.3折</span>
+          </div>
+          <h1 class="product-title">2024新款秋季时尚卫衣女宽松韩版百搭连帽外套学生休闲上衣</h1>
+          <div class="product-tags">
+            <div class="product-tag-item">
+              <span class="icon">🔥</span>
+              <span>热销爆款</span>
+            </div>
+            <div class="product-tag-item">
+              <span class="icon">🚚</span>
+              <span>顺丰包邮</span>
+            </div>
+            <div class="product-tag-item">
+              <span class="icon">✓</span>
+              <span>7天无理由退换</span>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <span>销量</span>
+              <span class="value">2.3万+</span>
+            </div>
+            <div class="stat-item">
+              <span>好评率</span>
+              <span class="value">98%</span>
+            </div>
+            <div class="stat-item">
+              <span>收藏</span>
+              <span class="value">5678</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 优惠信息 -->
+        <div class="promo-section">
+          <div class="promo-header">
+            <div class="promo-title">
+              <span>🎫</span>
+              <span>优惠</span>
+            </div>
+            <span class="promo-more">查看更多 ›</span>
+          </div>
+          <div class="promo-list">
+            <div class="promo-item">
+              <span class="promo-tag">满减</span>
+              <span class="promo-desc">满199减30，满399减80</span>
+            </div>
+            <div class="promo-item">
+              <span class="promo-tag">券</span>
+              <span class="promo-desc">新人专享券 满100减20</span>
+            </div>
+            <div class="promo-item">
+              <span class="promo-tag">VIP</span>
+              <span class="promo-desc">VIP会员享95折优惠</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 规格选择 -->
+        <div class="spec-section">
+          <div class="spec-row" id="openSpecModal">
+            <span class="spec-label">规格</span>
+            <div class="spec-value">
+              <div class="selected-specs">
+                <span class="selected-spec">白色</span>
+                <span class="selected-spec">M</span>
+              </div>
+              <span class="spec-arrow">›</span>
+            </div>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">配送</span>
+            <div class="spec-value">
+              <span>广东广州 至 北京朝阳</span>
+              <span class="spec-arrow">›</span>
+            </div>
+          </div>
+          <div class="spec-row">
+            <span class="spec-label">服务</span>
+            <div class="spec-value">
+              <span>顺丰快递 · 预计明天送达</span>
+              <span class="spec-arrow">›</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 店铺信息 -->
+        <div class="shop-section">
+          <div class="shop-info">
+            <img src="https://picsum.photos/seed/shop1/100/100" alt="店铺头像" class="shop-avatar">
+            <div class="shop-detail">
+              <div class="shop-name">时尚潮流旗舰店</div>
+              <div class="shop-stats">
+                <div class="shop-stat">粉丝 <span>12.8万</span></div>
+                <div class="shop-stat">评分 <span>4.9</span></div>
+              </div>
+            </div>
+            <button class="shop-btn">进店逛逛</button>
+          </div>
+        </div>
+        
+        <!-- 评价区域 -->
+        <div class="review-section">
+          <div class="review-header">
+            <span class="review-title">用户评价 (2368)</span>
+            <span class="review-count">查看全部 ›</span>
+          </div>
+          <div class="review-tags">
+            <div class="review-tag active">全部 (2368)</div>
+            <div class="review-tag">好评 (2301)</div>
+            <div class="review-tag">有图 (856)</div>
+            <div class="review-tag">追评 (234)</div>
+          </div>
+          <div class="review-item">
+            <div class="review-user">
+              <img src="https://picsum.photos/seed/user1/50/50" alt="用户头像" class="review-avatar">
+              <span class="review-username">小***爱</span>
+              <div class="review-rating">★★★★★</div>
+            </div>
+            <div class="review-content">
+              衣服质量非常好，面料柔软舒适，穿上很显瘦。颜色和图片一样，没有色差。发货速度很快，包装也很精美。非常满意的一次购物！
+            </div>
+            <div class="review-images">
+              <img src="https://picsum.photos/seed/review1/100/100" alt="评价图片" class="review-img">
+              <img src="https://picsum.photos/seed/review2/100/100" alt="评价图片" class="review-img">
+              <img src="https://picsum.photos/seed/review3/100/100" alt="评价图片" class="review-img">
+            </div>
+            <div class="review-meta">
+              <span>规格：白色 M</span>
+              <span>2024-01-15</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 商品详情 -->
+        <div class="detail-section">
+          <div class="detail-header">— 商品详情 —</div>
+          <div class="detail-images">
+            <img src="https://picsum.photos/seed/desc1/400/600" alt="详情图" class="detail-img">
+            <img src="https://picsum.photos/seed/desc2/400/500" alt="详情图" class="detail-img">
+            <img src="https://picsum.photos/seed/desc3/400/700" alt="详情图" class="detail-img">
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部操作栏 -->
+      <div class="bottom-action-bar">
+        <div class="action-icons">
+          <div class="action-icon-item">
+            <span class="icon">🏪</span>
+            <span class="label">店铺</span>
+          </div>
+          <div class="action-icon-item">
+            <span class="icon">💬</span>
+            <span class="label">客服</span>
+          </div>
+          <div class="action-icon-item active">
+            <span class="icon">❤️</span>
+            <span class="label">收藏</span>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-add-cart">加入购物车</button>
+          <button class="btn-buy-now">立即购买</button>
+        </div>
+      </div>
+      
+      <!-- 规格弹窗遮罩 -->
+      <div class="modal-overlay" id="modalOverlay"></div>
+      
+      <!-- 规格弹窗 -->
+      <div class="spec-modal" id="specModal">
+        <span class="modal-close" id="closeModal">×</span>
+        <div class="modal-header">
+          <img src="https://picsum.photos/seed/detail1/100/100" alt="商品" class="modal-product-img">
+          <div class="modal-product-info">
+            <div class="modal-price">¥128</div>
+            <div class="modal-stock">库存: 999件</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">已选：白色 M</div>
+          </div>
+        </div>
+        
+        <div class="spec-group">
+          <div class="spec-group-title">颜色</div>
+          <div class="spec-options">
+            <div class="spec-option active">白色</div>
+            <div class="spec-option">黑色</div>
+            <div class="spec-option">灰色</div>
+            <div class="spec-option">粉色</div>
+            <div class="spec-option">蓝色</div>
+          </div>
+        </div>
+        
+        <div class="spec-group">
+          <div class="spec-group-title">尺码</div>
+          <div class="spec-options">
+            <div class="spec-option">S</div>
+            <div class="spec-option active">M</div>
+            <div class="spec-option">L</div>
+            <div class="spec-option">XL</div>
+            <div class="spec-option">XXL</div>
+          </div>
+        </div>
+        
+        <div class="quantity-section">
+          <span class="quantity-label">购买数量</span>
+          <div class="quantity-control">
+            <button class="quantity-btn" id="decrease">−</button>
+            <span class="quantity-value" id="quantity">1</span>
+            <button class="quantity-btn" id="increase">+</button>
+          </div>
+        </div>
+        
+        <button class="modal-confirm-btn">确定</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 规格弹窗
+    const openModalBtn = document.getElementById('openSpecModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const specModal = document.getElementById('specModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    
+    openModalBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('show');
+      specModal.classList.add('show');
+    });
+    
+    function closeModal() {
+      modalOverlay.classList.remove('show');
+      specModal.classList.remove('show');
+    }
+    
+    closeModalBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', closeModal);
+    
+    // 规格选择
+    const specOptions = document.querySelectorAll('.spec-option');
+    specOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        const parent = this.parentElement;
+        parent.querySelectorAll('.spec-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    
+    // 数量控制
+    let quantity = 1;
+    const quantityEl = document.getElementById('quantity');
+    const decreaseBtn = document.getElementById('decrease');
+    const increaseBtn = document.getElementById('increase');
+    
+    decreaseBtn.addEventListener('click', () => {
+      if (quantity > 1) {
+        quantity--;
+        quantityEl.textContent = quantity;
+      }
+    });
+    
+    increaseBtn.addEventListener('click', () => {
+      quantity++;
+      quantityEl.textContent = quantity;
+    });
+    
+    // 图片轮播指示器
+    const gallery = document.querySelector('.gallery-slider');
+    const indicator = document.querySelector('.gallery-indicator');
+    
+    gallery.addEventListener('scroll', () => {
+      const index = Math.round(gallery.scrollLeft / gallery.offsetWidth) + 1;
+      indicator.textContent = `${index}/4`;
+    });
+  </script>
+</body>
+</html>

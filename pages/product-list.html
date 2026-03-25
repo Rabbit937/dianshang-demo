@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>电商小程序 - 商品列表</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <style>
+    /* 商品列表页样式 */
+    .product-list-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-white);
+    }
+    
+    /* 筛选栏 */
+    .filter-bar {
+      display: flex;
+      background: var(--bg-white);
+      border-bottom: 1px solid var(--divider);
+    }
+    
+    .filter-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .filter-item.active {
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    
+    .filter-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 2px;
+      background: var(--primary-gradient);
+      border-radius: 1px;
+    }
+    
+    .filter-arrow {
+      margin-left: 4px;
+      font-size: 10px;
+      transition: transform 0.3s ease;
+    }
+    
+    .filter-item.active .filter-arrow {
+      transform: rotate(180deg);
+    }
+    
+    /* 筛选面板 */
+    .filter-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-white);
+      box-shadow: var(--shadow-lg);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      padding: 16px;
+      display: none;
+      z-index: 100;
+    }
+    
+    .filter-panel.show {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+    
+    .filter-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .filter-option {
+      padding: 8px 16px;
+      background: var(--bg-light);
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .filter-option:hover,
+    .filter-option.active {
+      background: var(--primary-gradient);
+      color: white;
+    }
+    
+    /* 商品列表 */
+    .product-list {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 100px;
+    }
+    
+    /* 列表样式商品卡片 */
+    .product-list-card {
+      display: flex;
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .product-list-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .product-list-img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    
+    .product-list-info {
+      flex: 1;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .product-list-name {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    .product-list-tags {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .product-list-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: auto;
+    }
+    
+    .product-list-price {
+      display: flex;
+      align-items: baseline;
+    }
+    
+    .product-list-sales {
+      font-size: 11px;
+      color: var(--text-hint);
+    }
+    
+    .add-cart-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary-gradient);
+      border: none;
+      color: white;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .add-cart-btn:hover {
+      transform: scale(1.1);
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* 网格样式切换 */
+    .view-toggle {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 8px;
+    }
+    
+    .toggle-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--bg-light);
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .toggle-btn.active {
+      background: var(--primary-red);
+      color: white;
+    }
+    
+    /* 网格视图 */
+    .product-grid-view {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 12px;
+      padding-bottom: 100px;
+    }
+    
+    .product-grid-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .product-grid-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .product-grid-img {
+      width: 100%;
+      padding-top: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .product-grid-img img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .product-grid-card:hover .product-grid-img img {
+      transform: scale(1.05);
+    }
+    
+    .product-grid-info {
+      padding: 12px;
+    }
+    
+    .product-grid-name {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      height: 36px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    
+    /* 筛选标签栏 */
+    .selected-filters {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-white);
+      overflow-x: auto;
+      border-bottom: 1px solid var(--divider);
+    }
+    
+    .selected-filters::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .selected-filter-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 12px;
+      background: #FFEBEE;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      color: var(--primary-red);
+      white-space: nowrap;
+    }
+    
+    .selected-filter-tag .close {
+      font-size: 10px;
+      cursor: pointer;
+    }
+    
+    /* 加载更多 */
+    .load-more {
+      text-align: center;
+      padding: 16px;
+      color: var(--text-hint);
+      font-size: 13px;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--bg-light);
+      border-top-color: var(--primary-red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 底部工具栏 */
+    .bottom-toolbar {
+      position: absolute;
+      bottom: 83px;
+      left: 0;
+      right: 0;
+      background: var(--bg-white);
+      border-top: 1px solid var(--divider);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .toolbar-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .toolbar-count {
+      font-size: 14px;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="phone-screen">
+      <!-- 状态栏 -->
+      <div class="status-bar status-bar-light">
+        <span>9:41</span>
+        <div class="flex-center gap-4">
+          <span>📶</span>
+          <span>🔋</span>
+        </div>
+      </div>
+      
+      <!-- 导航栏 -->
+      <div class="nav-bar nav-bar-light" style="position: relative;">
+        <span class="nav-bar-back">‹</span>
+        <span class="nav-bar-title">女装卫衣</span>
+        <div class="view-toggle">
+          <button class="toggle-btn" id="listView">☰</button>
+          <button class="toggle-btn active" id="gridView">⊞</button>
+        </div>
+      </div>
+      
+      <!-- 筛选栏 -->
+      <div class="product-list-header">
+        <div class="filter-bar">
+          <div class="filter-item active">综合</div>
+          <div class="filter-item">销量</div>
+          <div class="filter-item">
+            价格
+            <span class="filter-arrow">▼</span>
+          </div>
+          <div class="filter-item">
+            筛选
+            <span class="filter-arrow">▼</span>
+          </div>
+        </div>
+        
+        <!-- 已选筛选 -->
+        <div class="selected-filters">
+          <div class="selected-filter-tag">
+            卫衣
+            <span class="close">×</span>
+          </div>
+          <div class="selected-filter-tag">
+            秋季新品
+            <span class="close">×</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 商品列表 - 网格视图 -->
+      <div class="product-grid-view" id="productGrid">
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list1/200/200" alt="商品">
+            <div class="product-tag" style="position: absolute; top: 8px; left: 8px;">
+              <span class="tag tag-hot">爆款</span>
+            </div>
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">2024新款秋季时尚卫衣女宽松韩版百搭连帽外套</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">128</span>
+              </div>
+              <span class="product-sales">2.3万人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list2/200/200" alt="商品">
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">韩版宽松显瘦连帽卫衣女 加绒加厚保暖</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">89</span>
+                <span class="price-original">¥168</span>
+              </div>
+              <span class="product-sales">1.8万人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list3/200/200" alt="商品">
+            <div class="product-tag" style="position: absolute; top: 8px; left: 8px;">
+              <span class="tag tag-new">新品</span>
+            </div>
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">潮牌美式复古oversize卫衣女 加厚保暖外套</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">158</span>
+              </div>
+              <span class="product-sales">8562人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list4/200/200" alt="商品">
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">简约纯色圆领套头卫衣女 休闲百搭上衣</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">69</span>
+                <span class="price-original">¥129</span>
+              </div>
+              <span class="product-sales">6543人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list5/200/200" alt="商品">
+            <div class="product-tag" style="position: absolute; top: 8px; left: 8px;">
+              <span class="tag tag-sale">特价</span>
+            </div>
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">学院风刺绣连帽卫衣女 青春减龄上衣</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">99</span>
+                <span class="price-original">¥199</span>
+              </div>
+              <span class="product-sales">5234人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list6/200/200" alt="商品">
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">港风BF风宽松卫衣女 秋冬新款加厚外套</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">138</span>
+              </div>
+              <span class="product-sales">4876人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list7/200/200" alt="商品">
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">日系复古印花卫衣女 宽松慵懒风上衣</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">118</span>
+                <span class="price-original">¥218</span>
+              </div>
+              <span class="product-sales">3987人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="product-grid-card">
+          <div class="product-grid-img">
+            <img src="https://picsum.photos/seed/list8/200/200" alt="商品">
+            <div class="product-tag" style="position: absolute; top: 8px; left: 8px;">
+              <span class="tag tag-vip">VIP</span>
+            </div>
+          </div>
+          <div class="product-grid-info">
+            <div class="product-grid-name">高端羊羔毛卫衣女 秋冬加厚保暖外套</div>
+            <div class="product-bottom">
+              <div class="product-price">
+                <span class="price-symbol">¥</span>
+                <span class="price-value">258</span>
+                <span class="price-original">¥458</span>
+              </div>
+              <span class="product-sales">2156人付款</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 加载更多 -->
+        <div style="grid-column: span 2;">
+          <div class="load-more">
+            <span class="loading-spinner"></span>
+            加载中...
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部工具栏 -->
+      <div class="bottom-toolbar">
+        <div class="toolbar-left">
+          <span class="toolbar-text">共找到</span>
+          <span class="toolbar-count">1,234</span>
+          <span class="toolbar-text">件商品</span>
+        </div>
+        <button class="btn-outline" style="padding: 6px 16px; font-size: 12px;">↑ 返回顶部</button>
+      </div>
+      
+      <!-- 底部导航 -->
+      <div class="tab-bar">
+        <div class="tab-item">
+          <span class="tab-icon">🏠</span>
+          <span class="tab-label">首页</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">📂</span>
+          <span class="tab-label">分类</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">🛒</span>
+          <span class="tab-label">购物车</span>
+          <div class="badge">3</div>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">我的</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 视图切换
+    const listBtn = document.getElementById('listView');
+    const gridBtn = document.getElementById('gridView');
+    
+    listBtn.addEventListener('click', () => {
+      listBtn.classList.add('active');
+      gridBtn.classList.remove('active');
+    });
+    
+    gridBtn.addEventListener('click', () => {
+      gridBtn.classList.add('active');
+      listBtn.classList.remove('active');
+    });
+    
+    // 筛选切换
+    const filterItems = document.querySelectorAll('.filter-item');
+    filterItems.forEach(item => {
+      item.addEventListener('click', function() {
+        filterItems.forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

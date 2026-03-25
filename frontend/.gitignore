@@ -1,0 +1,24 @@
+# uni-app
+unpackage/
+
+# 构建
+dist/
+dist-ssr/
+
+# IDE
+.hbuilderx/
+.vscode/
+*.swp
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+*.log
+
+# 缓存
+.cache/
+.temp/
+.tmp/

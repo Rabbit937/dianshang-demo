@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>电商小程序 - 个人中心</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <style>
+    /* 个人中心页样式 */
+    .profile-container {
+      padding-bottom: 100px;
+    }
+    
+    /* 用户头部 */
+    .user-header {
+      background: var(--primary-gradient);
+      padding: 20px 16px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .user-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    
+    .user-header::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 150px;
+      height: 150px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    
+    .header-top {
+      display: flex;
+      justify-content: flex-end;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .header-icon {
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+      opacity: 0.9;
+      transition: all 0.3s ease;
+    }
+    
+    .header-icon:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .user-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.3);
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
+    .user-detail {
+      flex: 1;
+    }
+    
+    .user-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 4px;
+    }
+    
+    .user-level {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      color: white;
+    }
+    
+    .user-level .icon {
+      color: var(--gold);
+    }
+    
+    .edit-profile {
+      font-size: 12px;
+      color: white;
+      opacity: 0.9;
+      cursor: pointer;
+    }
+    
+    /* VIP卡片 */
+    .vip-card {
+      margin: -40px 16px 16px;
+      background: linear-gradient(135deg, #2C2C2C 0%, #1A1A1A 100%);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    
+    .vip-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, transparent 50%);
+      border-radius: var(--radius-lg);
+    }
+    
+    .vip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .vip-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .vip-badge {
+      background: linear-gradient(135deg, #FFD700, #FFC107);
+      color: #333;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    
+    .vip-more {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+    }
+    
+    .vip-progress {
+      margin-bottom: 8px;
+    }
+    
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 4px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #FFD700, #FFC107);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    
+    .vip-benefits {
+      display: flex;
+      justify-content: space-around;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .benefit-item {
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .benefit-item:hover {
+      transform: translateY(-2px);
+    }
+    
+    .benefit-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    
+    .benefit-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 2px;
+    }
+    
+    /* 订单区域 */
+    .order-section {
+      background: var(--bg-white);
+      margin: 0 16px 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .section-more {
+      font-size: 12px;
+      color: var(--text-hint);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    
+    .order-status {
+      display: flex;
+      justify-content: space-around;
+      padding: 0 8px 16px;
+    }
+    
+    .status-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .status-item:hover {
+      transform: translateY(-2px);
+    }
+    
+    .status-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    .status-item:hover .status-icon {
+      background: #FFEBEE;
+    }
+    
+    .status-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .status-badge {
+      position: absolute;
+      top: 0;
+      right: 8px;
+      min-width: 16px;
+      height: 16px;
+      background: var(--primary-red);
+      color: white;
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+    
+    /* 功能菜单 */
+    .menu-section {
+      background: var(--bg-white);
+      margin: 0 16px 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 16px 8px;
+    }
+    
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .menu-item:hover {
+      transform: translateY(-2px);
+    }
+    
+    .menu-item:active {
+      transform: scale(0.95);
+    }
+    
+    .menu-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .menu-item:nth-child(1) .menu-icon { background: linear-gradient(135deg, #FFE5E5, #FFCDD2); }
+    .menu-item:nth-child(2) .menu-icon { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+    .menu-item:nth-child(3) .menu-icon { background: linear-gradient(135deg, #FFF8E1, #FFECB3); }
+    .menu-item:nth-child(4) .menu-icon { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+    .menu-item:nth-child(5) .menu-icon { background: linear-gradient(135deg, #F3E5F5, #E1BEE7); }
+    .menu-item:nth-child(6) .menu-icon { background: linear-gradient(135deg, #E0F7FA, #B2EBF2); }
+    .menu-item:nth-child(7) .menu-icon { background: linear-gradient(135deg, #FBE9E7, #FFCCBC); }
+    .menu-item:nth-child(8) .menu-icon { background: linear-gradient(135deg, #ECEFF1, #CFD8DC); }
+    
+    .menu-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    /* 列表菜单 */
+    .list-menu {
+      background: var(--bg-white);
+      margin: 0 16px 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .list-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--divider);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .list-item:last-child {
+      border-bottom: none;
+    }
+    
+    .list-item:active {
+      background: var(--bg-light);
+    }
+    
+    .list-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 12px;
+    }
+    
+    .list-content {
+      flex: 1;
+    }
+    
+    .list-title {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    
+    .list-desc {
+      font-size: 12px;
+      color: var(--text-hint);
+      margin-top: 2px;
+    }
+    
+    .list-arrow {
+      color: var(--text-hint);
+      font-size: 14px;
+    }
+    
+    .list-badge {
+      background: var(--primary-red);
+      color: white;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      margin-right: 8px;
+    }
+    
+    /* 热门推荐 */
+    .hot-section {
+      background: var(--bg-white);
+      margin: 0 16px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .hot-list {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 16px 16px;
+      gap: 12px;
+    }
+    
+    .hot-list::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .hot-item {
+      min-width: 120px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .hot-item:hover {
+      transform: translateY(-4px);
+    }
+    
+    .hot-img {
+      width: 120px;
+      height: 120px;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      margin-bottom: 8px;
+    }
+    
+    .hot-name {
+      font-size: 12px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    
+    .hot-price {
+      font-size: 14px;
+      color: var(--primary-red);
+      font-weight: 600;
+    }
+    
+    /* 客服浮窗 */
+    .customer-service {
+      position: fixed;
+      right: 16px;
+      bottom: 180px;
+      width: 50px;
+      height: 50px;
+      background: var(--primary-gradient);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 50;
+    }
+    
+    .customer-service:hover {
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="phone-screen">
+      <!-- 用户头部 -->
+      <div class="user-header">
+        <div class="header-top">
+          <span class="header-icon">🔔</span>
+          <span class="header-icon">⚙️</span>
+        </div>
+        <div class="user-info">
+          <img src="https://picsum.photos/seed/avatar/100/100" alt="头像" class="user-avatar">
+          <div class="user-detail">
+            <div class="user-name">小美同学</div>
+            <div class="user-level">
+              <span class="icon">👑</span>
+              <span>黄金会员</span>
+            </div>
+          </div>
+          <span class="edit-profile">编辑资料 ›</span>
+        </div>
+      </div>
+      
+      <div class="profile-container">
+        <!-- VIP卡片 -->
+        <div class="vip-card">
+          <div class="vip-header">
+            <div class="vip-title">
+              <span>💎</span>
+              <span>会员中心</span>
+            </div>
+            <span class="vip-more">更多权益 ›</span>
+          </div>
+          <div class="vip-progress">
+            <div class="progress-text">
+              <span>成长值 2860/5000</span>
+              <span>距铂金会员还差2140</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 57%"></div>
+            </div>
+          </div>
+          <div class="vip-benefits">
+            <div class="benefit-item">
+              <div class="benefit-value">2680</div>
+              <div class="benefit-label">积分</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-value">5</div>
+              <div class="benefit-label">优惠券</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-value">¥320</div>
+              <div class="benefit-label">已省金额</div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-value">12</div>
+              <div class="benefit-label">特权</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 订单区域 -->
+        <div class="order-section">
+          <div class="section-header">
+            <span class="section-title">我的订单</span>
+            <span class="section-more">全部订单 ›</span>
+          </div>
+          <div class="order-status">
+            <div class="status-item">
+              <div class="status-icon">💳</div>
+              <span class="status-label">待付款</span>
+              <span class="status-badge">2</span>
+            </div>
+            <div class="status-item">
+              <div class="status-icon">📦</div>
+              <span class="status-label">待发货</span>
+              <span class="status-badge">1</span>
+            </div>
+            <div class="status-item">
+              <div class="status-icon">🚚</div>
+              <span class="status-label">待收货</span>
+              <span class="status-badge">3</span>
+            </div>
+            <div class="status-item">
+              <div class="status-icon">⭐</div>
+              <span class="status-label">待评价</span>
+              <span class="status-badge">5</span>
+            </div>
+            <div class="status-item">
+              <div class="status-icon">🔄</div>
+              <span class="status-label">退换货</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 功能菜单 -->
+        <div class="menu-section">
+          <div class="section-header">
+            <span class="section-title">我的服务</span>
+          </div>
+          <div class="menu-grid">
+            <div class="menu-item">
+              <div class="menu-icon">❤️</div>
+              <span class="menu-label">我的收藏</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">👁️</div>
+              <span class="menu-label">浏览记录</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">📍</div>
+              <span class="menu-label">收货地址</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">🎫</div>
+              <span class="menu-label">优惠券</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">💰</div>
+              <span class="menu-label">我的钱包</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">🎁</div>
+              <span class="menu-label">积分商城</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">🙋</div>
+              <span class="menu-label">邀请好友</span>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon">📋</div>
+              <span class="menu-label">更多服务</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 列表菜单 -->
+        <div class="list-menu">
+          <div class="list-item">
+            <div class="list-icon" style="background: linear-gradient(135deg, #FFE5E5, #FFCDD2);">🏪</div>
+            <div class="list-content">
+              <div class="list-title">我关注的店铺</div>
+              <div class="list-desc">查看店铺最新动态</div>
+            </div>
+            <span class="list-badge">NEW</span>
+            <span class="list-arrow">›</span>
+          </div>
+          <div class="list-item">
+            <div class="list-icon" style="background: linear-gradient(135deg, #E3F2FD, #BBDEFB);">💬</div>
+            <div class="list-content">
+              <div class="list-title">我的客服</div>
+              <div class="list-desc">在线客服，随时为您解答</div>
+            </div>
+            <span class="list-arrow">›</span>
+          </div>
+          <div class="list-item">
+            <div class="list-icon" style="background: linear-gradient(135deg, #FFF8E1, #FFECB3);">❓</div>
+            <div class="list-content">
+              <div class="list-title">帮助中心</div>
+              <div class="list-desc">常见问题解答</div>
+            </div>
+            <span class="list-arrow">›</span>
+          </div>
+          <div class="list-item">
+            <div class="list-icon" style="background: linear-gradient(135deg, #E8F5E9, #C8E6C9);">📱</div>
+            <div class="list-content">
+              <div class="list-title">关于我们</div>
+              <div class="list-desc">版本 v1.0.0</div>
+            </div>
+            <span class="list-arrow">›</span>
+          </div>
+        </div>
+        
+        <!-- 热门推荐 -->
+        <div class="hot-section">
+          <div class="section-header">
+            <span class="section-title">猜你喜欢</span>
+            <span class="section-more">更多 ›</span>
+          </div>
+          <div class="hot-list">
+            <div class="hot-item">
+              <img src="https://picsum.photos/seed/hot1/150/150" alt="推荐" class="hot-img">
+              <div class="hot-name">时尚休闲卫衣女 秋季新款</div>
+              <div class="hot-price">¥99</div>
+            </div>
+            <div class="hot-item">
+              <img src="https://picsum.photos/seed/hot2/150/150" alt="推荐" class="hot-img">
+              <div class="hot-name">智能手表运动版 健康监测</div>
+              <div class="hot-price">¥299</div>
+            </div>
+            <div class="hot-item">
+              <img src="https://picsum.photos/seed/hot3/150/150" alt="推荐" class="hot-img">
+              <div class="hot-name">大牌口红礼盒套装</div>
+              <div class="hot-price">¥199</div>
+            </div>
+            <div class="hot-item">
+              <img src="https://picsum.photos/seed/hot4/150/150" alt="推荐" class="hot-img">
+              <div class="hot-name">北欧简约落地灯</div>
+              <div class="hot-price">¥359</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 客服浮窗 -->
+      <div class="customer-service">💬</div>
+      
+      <!-- 底部导航 -->
+      <div class="tab-bar">
+        <div class="tab-item">
+          <span class="tab-icon">🏠</span>
+          <span class="tab-label">首页</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">📂</span>
+          <span class="tab-label">分类</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">🛒</span>
+          <span class="tab-label">购物车</span>
+          <div class="badge">3</div>
+        </div>
+        <div class="tab-item active">
+          <span class="tab-icon">👤</span>
+          <span class="tab-label">我的</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 订单状态点击
+    const statusItems = document.querySelectorAll('.status-item');
+    statusItems.forEach(item => {
+      item.addEventListener('click', function() {
+        const label = this.querySelector('.status-label').textContent;
+        console.log('点击:', label);
+      });
+    });
+    
+    // 菜单项点击
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function() {
+        const label = this.querySelector('.menu-label').textContent;
+        console.log('点击:', label);
+      });
+    });
+  </script>
+</body>
+</html>
